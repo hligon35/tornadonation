@@ -1,7 +1,8 @@
 import { Link } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, Pressable, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { FlatList, Pressable, View } from 'react-native';
 
 import type { Product } from '@tornado-nation/shared';
 import { Button, Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
@@ -11,7 +12,7 @@ import { useCart } from '../../../lib/store/cart-context';
 
 type StoreProductMeta = {
   description: string;
-  image: any;
+  icon: keyof typeof Ionicons.glyphMap;
   sizes?: string[];
   colors?: string[];
 };
@@ -21,24 +22,24 @@ type StoreProductView = Product & StoreProductMeta;
 const productMetaById: Record<string, StoreProductMeta> = {
   tee: {
     description: 'Soft cotton tee with Tornado Nation front print.',
-    image: require('../../../assets/team-tiles/football.png'),
+    icon: 'pricetag-outline',
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black', 'White'],
   },
   hat: {
     description: 'Classic adjustable hat with embroidered logo.',
-    image: require('../../../assets/team-tiles/baseball.png'),
+    icon: 'pricetag-outline',
     colors: ['Black', 'White'],
   },
   hoodie: {
     description: 'Warm hoodie for game nights and travel days.',
-    image: require('../../../assets/team-tiles/basketball.png'),
+    icon: 'pricetag-outline',
     sizes: ['S', 'M', 'L', 'XL'],
     colors: ['Black', 'White'],
   },
   sticker: {
     description: 'Weatherproof sticker for bottles, laptops, and lockers.',
-    image: require('../../../assets/team-tiles/generic.png'),
+    icon: 'pricetag-outline',
   },
 };
 
@@ -162,10 +163,12 @@ function ProductTile(props: { product: StoreProductView }) {
               borderColor: defaultTheme.colors.slate200,
             }}
           >
-            <Image
-              source={props.product.image}
-              resizeMode="cover"
-              style={{ width: '100%', height: '100%' }}
+            <Ionicons
+              accessibilityLabel={`${props.product.title} icon`}
+              name={props.product.icon}
+              size={56}
+              color={defaultTheme.colors.slate900}
+              style={{ alignSelf: 'center', marginTop: 18 }}
             />
           </View>
 
@@ -259,7 +262,7 @@ export default function StoreScreen() {
     return products.map((product) => {
       const meta = productMetaById[product.id] ?? {
         description: 'Tornado Nation merch (placeholder).',
-        image: require('../../../assets/team-tiles/generic.png'),
+        icon: 'pricetag-outline',
       };
       return { ...product, ...meta };
     });

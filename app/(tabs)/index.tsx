@@ -4,20 +4,14 @@ import { useRouter, type Href } from 'expo-router';
 import React from 'react';
 import {
   Animated,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
-  type ImageSourcePropType,
   useWindowDimensions,
 } from 'react-native';
 
 import { Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
-
-import footballTile from '../../assets/team-tiles/football.png';
-import basketballTile from '../../assets/team-tiles/basketball.png';
-import soccerTile from '../../assets/team-tiles/soccer.png';
 
 type QuickAction = {
   id: string;
@@ -65,10 +59,10 @@ const ALL_ACTIONS: QuickAction[] = [
 
 const DEFAULT_ACTION_IDS: string[] = ['tabs.events', 'tabs.live', 'tabs.store', 'tabs.teams'];
 
-const FAVORITE_TEAMS: Array<{ id: string; name: string; tile: ImageSourcePropType }> = [
-  { id: 'football', name: 'Football', tile: footballTile },
-  { id: 'basketball', name: 'Basketball', tile: basketballTile },
-  { id: 'soccer', name: 'Soccer', tile: soccerTile },
+const FAVORITE_TEAMS: Array<{ id: string; name: string; icon: keyof typeof Ionicons.glyphMap }> = [
+  { id: 'football', name: 'Football', icon: 'american-football-outline' },
+  { id: 'basketball', name: 'Basketball', icon: 'basketball-outline' },
+  { id: 'soccer', name: 'Soccer', icon: 'football-outline' },
 ];
 
 const TICKER_ITEMS: string[] = [
@@ -333,7 +327,9 @@ function ScrollCardCarousel(props: { cardWidth: number }) {
               accessibilityLabel={`${team.name} favorite team`}
               style={[styles.favoriteCard, { width: props.cardWidth, minHeight: 260 }]}
             >
-              <Image source={team.tile} style={styles.favoriteImage} resizeMode="cover" />
+              <View style={styles.favoriteImage} accessibilityLabel={`${team.name} tile placeholder`}>
+                <Ionicons name={team.icon} size={64} color={defaultTheme.colors.slate900} />
+              </View>
               <View style={{ padding: defaultTheme.spacing.md, gap: 4 }}>
                 <LabelText style={styles.favoriteName}>{team.name}</LabelText>
                 <LabelText>Tap Teams to view schedules</LabelText>
@@ -396,6 +392,9 @@ const styles = StyleSheet.create({
   favoriteImage: {
     width: '100%',
     height: 180,
+    backgroundColor: defaultTheme.colors.slate200,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   favoriteName: {
     color: defaultTheme.colors.slate900,

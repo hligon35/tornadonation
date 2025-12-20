@@ -9,6 +9,9 @@ dist/
 web-build/
 expo-env.d.ts
 
+# Snack demo (avoid committing local binary assets)
+assets/
+
 # Native
 .kotlin/
 *.orig.*

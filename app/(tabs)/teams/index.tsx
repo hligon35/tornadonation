@@ -1,32 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { FlatList, Image, Pressable, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 
 import type { Sport } from '@tornado-nation/shared';
 import { LabelText, Screen, Section } from '@tornado-nation/ui';
 import { defaultTheme } from '@tornado-nation/ui';
 
 import { api } from '../../../lib/api';
-
-const teamTileImages: Record<string, any> = {
-  baseball: require('../../../assets/team-tiles/baseball.png'),
-  basketball: require('../../../assets/team-tiles/basketball.png'),
-  bowling: require('../../../assets/team-tiles/bowling.png'),
-  cheer: require('../../../assets/team-tiles/cheer.png'),
-  'cross-country': require('../../../assets/team-tiles/cross-country.png'),
-  football: require('../../../assets/team-tiles/football.png'),
-  golf: require('../../../assets/team-tiles/golf.png'),
-  lacrosse: require('../../../assets/team-tiles/lacrosse.png'),
-  soccer: require('../../../assets/team-tiles/soccer.png'),
-  softball: require('../../../assets/team-tiles/softball.png'),
-  swim: require('../../../assets/team-tiles/swim.png'),
-  tennis: require('../../../assets/team-tiles/tennis.png'),
-  track: require('../../../assets/team-tiles/track.png'),
-  volleyball: require('../../../assets/team-tiles/volleyball.png'),
-  wrestling: require('../../../assets/team-tiles/wrestling.png'),
-  generic: require('../../../assets/team-tiles/generic.png'),
-};
 
 const fallbackSports: Sport[] = [
   { id: 'baseball', name: 'Baseball', slug: 'baseball' },
@@ -136,13 +117,15 @@ export default function TeamsSportsListScreen() {
                       borderWidth: 1,
                       borderColor: defaultTheme.colors.slate200,
                       marginBottom: 10,
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
                   >
-                    <Image
-                      accessibilityLabel={`${item.name} image`}
-                      source={teamTileImages[item.id] ?? teamTileImages.generic}
-                      resizeMode="cover"
-                      style={{ width: '100%', height: '100%' }}
+                    <Ionicons
+                      accessibilityLabel={`${item.name} icon`}
+                      name={iconForSportId(item.id)}
+                      size={56}
+                      color={defaultTheme.colors.slate900}
                     />
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

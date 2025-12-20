@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Pressable, View } from 'react-native';
 
 import { Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
 
@@ -32,24 +33,9 @@ function titleCaseFromId(id: string) {
     .join(' ');
 }
 
-const teamTileImages: Record<string, any> = {
-  baseball: require('../../../../assets/team-tiles/baseball.png'),
-  basketball: require('../../../../assets/team-tiles/basketball.png'),
-  bowling: require('../../../../assets/team-tiles/bowling.png'),
-  cheer: require('../../../../assets/team-tiles/cheer.png'),
-  'cross-country': require('../../../../assets/team-tiles/cross-country.png'),
-  football: require('../../../../assets/team-tiles/football.png'),
-  golf: require('../../../../assets/team-tiles/golf.png'),
-  lacrosse: require('../../../../assets/team-tiles/lacrosse.png'),
-  soccer: require('../../../../assets/team-tiles/soccer.png'),
-  softball: require('../../../../assets/team-tiles/softball.png'),
-  swim: require('../../../../assets/team-tiles/swim.png'),
-  tennis: require('../../../../assets/team-tiles/tennis.png'),
-  track: require('../../../../assets/team-tiles/track.png'),
-  volleyball: require('../../../../assets/team-tiles/volleyball.png'),
-  wrestling: require('../../../../assets/team-tiles/wrestling.png'),
-  generic: require('../../../../assets/team-tiles/generic.png'),
-};
+function iconForSportId(_sportId: string): keyof typeof Ionicons.glyphMap {
+  return 'trophy-outline';
+}
 
 function CollapsibleSection(props: {
   title: string;
@@ -115,10 +101,12 @@ export default function TeamSeasonScreen() {
               borderColor: defaultTheme.colors.slate200,
             }}
           >
-            <Image
-              source={teamTileImages[sportId] ?? teamTileImages.generic}
-              resizeMode="cover"
-              style={{ width: '100%', height: '100%' }}
+            <Ionicons
+              accessibilityLabel={`${sportName} icon`}
+              name={iconForSportId(sportId)}
+              size={64}
+              color={defaultTheme.colors.slate900}
+              style={{ alignSelf: 'center', marginTop: 26 }}
             />
           </View>
 

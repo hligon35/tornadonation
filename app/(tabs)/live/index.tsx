@@ -1,26 +1,45 @@
 import { Link } from 'expo-router';
-import { Image, Pressable, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Pressable, View } from 'react-native';
 
 import { Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
 
-const teamTileImages: Record<string, any> = {
-  baseball: require('../../../assets/team-tiles/baseball.png'),
-  basketball: require('../../../assets/team-tiles/basketball.png'),
-  bowling: require('../../../assets/team-tiles/bowling.png'),
-  cheer: require('../../../assets/team-tiles/cheer.png'),
-  'cross-country': require('../../../assets/team-tiles/cross-country.png'),
-  football: require('../../../assets/team-tiles/football.png'),
-  golf: require('../../../assets/team-tiles/golf.png'),
-  lacrosse: require('../../../assets/team-tiles/lacrosse.png'),
-  soccer: require('../../../assets/team-tiles/soccer.png'),
-  softball: require('../../../assets/team-tiles/softball.png'),
-  swim: require('../../../assets/team-tiles/swim.png'),
-  tennis: require('../../../assets/team-tiles/tennis.png'),
-  track: require('../../../assets/team-tiles/track.png'),
-  volleyball: require('../../../assets/team-tiles/volleyball.png'),
-  wrestling: require('../../../assets/team-tiles/wrestling.png'),
-  generic: require('../../../assets/team-tiles/generic.png'),
-};
+function iconForTeamId(id: string): keyof typeof Ionicons.glyphMap {
+  switch (id) {
+    case 'baseball':
+      return 'baseball-outline';
+    case 'basketball':
+      return 'basketball-outline';
+    case 'bowling':
+      return 'bowling-ball-outline';
+    case 'cheer':
+      return 'megaphone-outline';
+    case 'cross-country':
+      return 'walk-outline';
+    case 'football':
+      return 'american-football-outline';
+    case 'golf':
+      return 'golf-outline';
+    case 'lacrosse':
+      return 'fitness-outline';
+    case 'soccer':
+      return 'football-outline';
+    case 'softball':
+      return 'baseball-outline';
+    case 'swim':
+      return 'water-outline';
+    case 'tennis':
+      return 'tennisball-outline';
+    case 'track':
+      return 'speedometer-outline';
+    case 'volleyball':
+      return 'tennisball-outline';
+    case 'wrestling':
+      return 'barbell-outline';
+    default:
+      return 'trophy-outline';
+  }
+}
 
 const teams = [
   { id: 'baseball', name: 'Baseball' },
@@ -137,13 +156,15 @@ export default function LiveScreen() {
                     backgroundColor: defaultTheme.colors.slate200,
                     borderWidth: 1,
                     borderColor: defaultTheme.colors.slate200,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}
                 >
-                  <Image
-                    accessibilityLabel={`${team.name} image`}
-                    source={teamTileImages[team.id] ?? teamTileImages.generic}
-                    resizeMode="cover"
-                    style={{ width: '100%', height: '100%' }}
+                  <Ionicons
+                    accessibilityLabel={`${team.name} icon`}
+                    name={iconForTeamId(team.id)}
+                    size={24}
+                    color={defaultTheme.colors.slate900}
                   />
                 </View>
 
