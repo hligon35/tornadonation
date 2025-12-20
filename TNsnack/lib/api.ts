@@ -5,40 +5,93 @@ import type {
   Sport,
 } from '@tornado-nation/shared';
 
-const baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000').replace(
-  /\/$/,
-  '',
-);
+const mockSports: Sport[] = [
+  { id: 'football', name: 'Football', slug: 'football' },
+  { id: 'basketball', name: 'Basketball', slug: 'basketball' },
+  { id: 'baseball', name: 'Baseball', slug: 'baseball' },
+  { id: 'soccer', name: 'Soccer', slug: 'soccer' },
+  { id: 'volleyball', name: 'Volleyball', slug: 'volleyball' },
+  { id: 'wrestling', name: 'Wrestling', slug: 'wrestling' },
+];
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${baseUrl}${path}`, {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
-  if (!res.ok) {
-    throw new Error(`API ${res.status} for ${path}`);
-  }
-  return (await res.json()) as T;
+function isoInDays(daysFromNow: number, hourLocal: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysFromNow);
+  date.setHours(hourLocal, 0, 0, 0);
+  return date.toISOString();
+}
+
+const mockEvents: GameEvent[] = [
+  {
+    id: 'event-football-1',
+    title: 'Varsity Football vs Rivals',
+    sportId: 'football',
+    startTimeIso: isoInDays(0, 19),
+    status: 'Scheduled',
+    level: 'Varsity',
+    locationName: 'Home Field',
+  },
+  {
+    id: 'event-basketball-1',
+    title: 'JV Basketball @ Central',
+    sportId: 'basketball',
+    startTimeIso: isoInDays(2, 18),
+    status: 'Scheduled',
+    level: 'JV',
+    locationName: 'Central HS',
+  },
+  {
+    id: 'event-baseball-1',
+    title: 'Baseball Scrimmage',
+    sportId: 'baseball',
+    startTimeIso: isoInDays(5, 16),
+    status: 'Scheduled',
+    level: 'Varsity',
+    locationName: 'Practice Field',
+  },
+];
+
+const mockSponsors: Sponsor[] = [
+  { id: 's-hero', name: 'Acme Auto', tier: 'Hero', websiteUrl: 'https://example.com', promoCode: 'TORNADO10' },
+  { id: 's-ribbon', name: 'Main Street Pizza', tier: 'Ribbon', websiteUrl: 'https://example.com' },
+  { id: 's-bumper', name: 'Community Bank', tier: 'Bumper', websiteUrl: 'https://example.com' },
+];
+
+const mockProducts: Product[] = [
+  { id: 'tee', title: 'Tornado Tee', description: 'Soft cotton tee.', priceCents: 2500, currency: 'USD', inStock: true },
+  { id: 'hat', title: 'Tornado Hat', description: 'Adjustable hat.', priceCents: 2000, currency: 'USD', inStock: true },
+  { id: 'hoodie', title: 'Tornado Hoodie', description: 'Warm fleece hoodie.', priceCents: 4500, currency: 'USD', inStock: true },
+  { id: 'sticker', title: 'Sticker Pack', description: 'Weatherproof stickers.', priceCents: 800, currency: 'USD', inStock: true },
+];
+
+async function listFromMock<T>(items: T[]): Promise<T[]> {
+  // Keep it async so React Query behavior matches real API.
+  return items;
+}
+
+async function getFromMockById<T extends { id: string }>(items: T[], id: string): Promise<T> {
+  const match = items.find((item) => item.id === id);
+  if (!match) throw new Error(`Not found: ${id}`);
+  return match;
 }
 
 export const api = {
   listSports(): Promise<Sport[]> {
-    return getJson('/v1/sports');
+    return listFromMock(mockSports);
   },
   listEvents(): Promise<GameEvent[]> {
-    return getJson('/v1/events');
+    return listFromMock(mockEvents);
   },
   getEvent(id: string): Promise<GameEvent> {
-    return getJson(`/v1/events/${encodeURIComponent(id)}`);
+    return getFromMockById(mockEvents, id);
   },
   listSponsors(): Promise<Sponsor[]> {
-    return getJson('/v1/sponsors');
+    return listFromMock(mockSponsors);
   },
   listProducts(): Promise<Product[]> {
-    return getJson('/v1/products');
+    return listFromMock(mockProducts);
   },
   getProduct(id: string): Promise<Product> {
-    return getJson(`/v1/products/${encodeURIComponent(id)}`);
+    return getFromMockById(mockProducts, id);
   },
 };
