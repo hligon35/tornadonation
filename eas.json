@@ -12,6 +12,12 @@
         "buildType": "apk"
       }
     },
+    "testflight": {
+      "distribution": "store",
+      "ios": {
+        "simulator": false
+      }
+    },
     "production": {
       "ios": {
         "simulator": false
@@ -19,6 +25,11 @@
       "android": {
         "buildType": "app-bundle"
       }
+    }
+  },
+  "submit": {
+    "testflight": {
+      "ios": {}
     }
   }
 }

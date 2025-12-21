@@ -10,7 +10,9 @@
     "web": "expo start --web",
     "export:web": "expo export --platform web",
     "build:ios:preview": "eas build --profile preview --platform ios",
-    "build:android:preview": "eas build --profile preview --platform android"
+    "build:android:preview": "eas build --profile preview --platform android",
+    "build:ios:testflight": "eas build --profile testflight --platform ios",
+    "submit:ios:testflight": "eas submit --profile testflight --platform ios --latest"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.4",
