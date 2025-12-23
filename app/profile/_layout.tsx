@@ -4,8 +4,8 @@ export default function ProfileLayout() {
   return (
     <Stack
       screenOptions={{
-        headerBackTitleVisible: false,
         headerBackButtonDisplayMode: 'minimal',
+        headerTitleAlign: 'center',
       }}
     >
       <Stack.Screen name="index" options={{ title: 'PROFILE' }} />

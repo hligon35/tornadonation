@@ -25,7 +25,7 @@ export default function ProfilePassesScreen() {
         <Card accessibilityLabel="Student pass" style={{ gap: 10 }}>
           <View style={styles.row}>
             <LabelText style={styles.title}>Student Pass</LabelText>
-            <LabelText style={[styles.pill, { backgroundColor: defaultTheme.colors.slate100 }]}>Not linked</LabelText>
+            <LabelText style={[styles.pill, { backgroundColor: defaultTheme.colors.slate200 }]}>Not linked</LabelText>
           </View>
           <LabelText>Link your student account to activate student entry.</LabelText>
         </Card>

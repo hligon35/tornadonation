@@ -15,7 +15,8 @@ import { defaultTheme } from './theme';
 export function Screen(props: { title?: string; children?: React.ReactNode }) {
   return (
     <ScrollView
-      contentContainerStyle={styles.screen}
+      style={styles.screenScroll}
+      contentContainerStyle={styles.screenContent}
       accessibilityRole="summary"
       accessibilityLabel={props.title ?? 'Screen'}
     >
@@ -68,9 +69,13 @@ export function Button(
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  screenScroll: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  screenContent: {
+    flexGrow: 1,
     padding: defaultTheme.spacing.lg,
-    backgroundColor: defaultTheme.colors.white,
     gap: defaultTheme.spacing.md,
   },
   h1: {

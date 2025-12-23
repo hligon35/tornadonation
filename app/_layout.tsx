@@ -4,10 +4,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
+import { useEffect } from 'react';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import AppBackground from '@/components/AppBackground';
+import { defaultTheme } from '@tornado-nation/ui';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -19,10 +24,29 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
+// Keep the splash screen visible while we load fonts.
+void SplashScreen.preventAutoHideAsync().catch(() => {
+  // Ignore errors (e.g., if already prevented).
+});
+
 export default function RootLayout() {
-  // Snack GitHub import can be fragile around bundled binary assets.
-  // For the demo, skip custom font loading and splash gating.
-  void FontAwesome.font;
+  const [loaded, error] = useFonts({
+    ...FontAwesome.font,
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      void SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (error) {
+    throw error;
+  }
+
+  if (!loaded) {
+    return null;
+  }
   return <RootLayoutNav />;
 }
 
@@ -43,6 +67,15 @@ const persister = createAsyncStoragePersister({
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
+  const baseTheme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
+  const navTheme = {
+    ...baseTheme,
+    colors: {
+      ...baseTheme.colors,
+      background: 'transparent',
+    },
+  };
+
   return (
     <PersistQueryClientProvider
       client={queryClient}
@@ -51,15 +84,27 @@ function RootLayoutNav() {
         maxAge: 1000 * 60 * 60 * 24,
       }}
     >
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerBackTitleVisible: false,
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        </Stack>
+      <ThemeProvider value={navTheme}>
+        <AppBackground>
+          <Stack
+            screenOptions={{
+              headerBackButtonDisplayMode: 'minimal',
+              headerTitleAlign: 'center',
+              contentStyle: {
+                backgroundColor: 'rgba(128, 128, 128, 0.25)',
+              },
+              headerStyle: {
+                backgroundColor: defaultTheme.colors.brandSecondary,
+              },
+              headerTintColor: defaultTheme.colors.slate900,
+              headerTitleStyle: {
+                color: defaultTheme.colors.slate900,
+              },
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </AppBackground>
       </ThemeProvider>
     </PersistQueryClientProvider>
   );

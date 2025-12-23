@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link } from 'expo-router';
+import { Link, type Href } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,7 +19,7 @@ const favoriteSportOptions = [
 ];
 
 function OptionTile(props: {
-  href: string;
+  href: Href;
   title: string;
   hint: string;
   icon: keyof typeof Ionicons.glyphMap;
@@ -93,7 +93,7 @@ export default function ProfileScreen() {
                 paddingVertical: 8,
                 paddingHorizontal: 10,
                 borderRadius: defaultTheme.radius.md,
-                backgroundColor: defaultTheme.colors.slate100,
+                backgroundColor: defaultTheme.colors.slate200,
                 opacity: pressed ? 0.85 : 1,
               })}
             >
