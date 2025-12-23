@@ -124,6 +124,15 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      {/* Keep Profile reachable via links/header button, but hide it from the bottom tab bar */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
     </Tabs>
   );
 }
