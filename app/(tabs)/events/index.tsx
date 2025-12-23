@@ -1,11 +1,13 @@
 import { Link } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 
 import type { GameEvent } from '@tornado-nation/shared';
 import { Button, Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
 
+import SportBadge from '../../../components/SportBadge';
 import { api } from '../../../lib/api';
 
 const fallbackEvents: GameEvent[] = [
@@ -151,10 +153,20 @@ function mergeScheduleGroups(args: {
 export default function EventsScreen() {
   const { width: windowWidth } = useWindowDimensions();
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [activeHorizontalScroll, setActiveHorizontalScroll] = useState<'sport' | 'week' | null>(null);
+  const sportPagerRef = useRef<any>(null);
   const eventsQuery = useQuery({
     queryKey: ['events'],
     queryFn: api.listEvents,
   });
+
+  const lockToSportPager = () => setActiveHorizontalScroll((prev) => prev ?? 'sport');
+  const unlockFromSportPager = () =>
+    setActiveHorizontalScroll((prev) => (prev === 'sport' ? null : prev));
+
+  const lockToWeekCarousel = () => setActiveHorizontalScroll('week');
+  const unlockFromWeekCarousel = () =>
+    setActiveHorizontalScroll((prev) => (prev === 'week' ? null : prev));
 
   const events = eventsQuery.data ?? fallbackEvents;
 
@@ -205,15 +217,19 @@ export default function EventsScreen() {
     return cells;
   }, [startOfMonth, daysInMonth]);
 
-  const dayGroups = groupBySportId(dailyEvents);
   const weekGroups = groupBySportId(weeklyEvents);
-  const scheduleGroups = mergeScheduleGroups({ daily: dayGroups, weekly: weekGroups });
+  const scheduleGroups = mergeScheduleGroups({ daily: [], weekly: weekGroups });
 
   // Screen uses padding; keep carousel pages inside that content width.
   const contentPadding = 16;
   const pageWidth = Math.max(0, windowWidth - contentPadding * 2);
-  const calendarGap = defaultTheme.spacing.xs;
+  const calendarGap = Math.max(0, defaultTheme.spacing.xs - 6);
   const calendarCellWidth = Math.max(1, Math.floor((pageWidth - calendarGap * 6) / 7));
+
+  const scrollToSportPage = (pageIndex: number) => {
+    if (!sportPagerRef.current) return;
+    sportPagerRef.current.scrollTo({ x: Math.max(0, pageIndex) * pageWidth, animated: true });
+  };
 
   return (
     <Screen title={undefined}>
@@ -221,16 +237,19 @@ export default function EventsScreen() {
         {eventsQuery.isLoading ? <LabelText>Loading…</LabelText> : null}
         {eventsQuery.isError ? <LabelText>API unavailable; showing placeholders.</LabelText> : null}
 
-        {scheduleGroups.length === 0 ? <LabelText>No events today or this week.</LabelText> : null}
+        {scheduleGroups.length === 0 ? <LabelText>No events this week.</LabelText> : null}
 
         {scheduleGroups.length > 0 ? (
           <ScrollView
+            ref={sportPagerRef}
             horizontal
             pagingEnabled
+            // Sport carousel is controlled via chevrons.
+            scrollEnabled={false}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ width: pageWidth * scheduleGroups.length }}
           >
-            {scheduleGroups.map((group) => {
+            {scheduleGroups.map((group, groupIndex) => {
               const weekBuckets: Array<{ date: Date; label: string; events: GameEvent[] }> = Array.from(
                 { length: 7 },
                 (_, i) => {
@@ -254,107 +273,88 @@ export default function EventsScreen() {
 
               return (
                 <View key={group.sportId} style={{ width: pageWidth, gap: 12 }}>
-                  <Card accessibilityLabel={`${group.sportName} schedule`}>
-                    <LabelText>{group.sportName}</LabelText>
-                  </Card>
-
-                  <Card accessibilityLabel={`${group.sportName} today schedule`}>
-                    <LabelText
-                      style={{
-                        fontSize: defaultTheme.typography.h2.fontSize,
-                        fontWeight: defaultTheme.typography.h2.fontWeight,
-                        color: defaultTheme.colors.slate900,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {formatMonthDayYear(startOfToday)}
-                    </LabelText>
-                    {group.dailyEvents.length === 0 ? <LabelText>No events today.</LabelText> : null}
-                  </Card>
-
-                  {group.dailyEvents.length ? (
-                    <Card
-                      accessibilityLabel={`${group.sportName} daily events`}
-                      style={{
-                        // Match the weekly day bucket container footprint.
-                        width: Math.max(140, Math.floor(pageWidth / 3)),
-                        alignSelf: 'flex-start',
-                        padding: defaultTheme.spacing.md,
-                      }}
-                    >
-                      <ScrollView
-                        horizontal
-                        pagingEnabled
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{ gap: 12 }}
+                  <View
+                    accessibilityLabel={`${group.sportName} schedule heading`}
+                    style={{
+                      width: '100%',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: defaultTheme.spacing.xs,
+                    }}
+                  >
+                    <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Previous sport"
+                        disabled={groupIndex === 0}
+                        onPress={() => scrollToSportPage(groupIndex - 1)}
+                        style={({ pressed }) => ({
+                          width: 40,
+                          height: 40,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: 25,
+                          opacity: groupIndex === 0 ? 0.3 : pressed ? 0.7 : 1,
+                        })}
                       >
-                        {group.dailyEvents.map((eventItem) => (
-                          <View
-                            key={eventItem.id}
+                        <Ionicons name="chevron-back" size={28} color={defaultTheme.colors.slate900} />
+                      </Pressable>
+
+                      <View
+                        style={{
+                          width: 105,
+                          height: 105,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <View style={{ position: 'absolute', opacity: 0.6 }}>
+                          <SportBadge sportId={group.sportId} size={150} />
+                        </View>
+
+                        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                          <LabelText
                             style={{
-                              width:
-                                Math.max(140, Math.floor(pageWidth / 3)) -
-                                defaultTheme.spacing.md * 2,
+                              fontSize: 24,
+                              fontWeight: '700',
+                              color: defaultTheme.colors.slate900,
+                              textAlign: 'center',
                             }}
                           >
-                            <Link href={`/(tabs)/events/game-center/${eventItem.id}`} asChild>
-                              <Pressable
-                                accessibilityRole="button"
-                                accessibilityLabel={`Open ${eventItem.title} game center`}
-                                style={({ pressed }) => ({
-                                  width: '100%',
-                                  aspectRatio: 1,
-                                  borderWidth: 1,
-                                  borderColor: defaultTheme.colors.slate200,
-                                  borderRadius: defaultTheme.radius.md,
-                                  backgroundColor: defaultTheme.colors.white,
-                                  padding: defaultTheme.spacing.md,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  opacity: pressed ? 0.9 : 1,
-                                })}
-                              >
-                                <View style={{ gap: 6, alignItems: 'center' }}>
-                                  <LabelText
-                                    numberOfLines={2}
-                                    style={{
-                                      color: defaultTheme.colors.slate900,
-                                      fontWeight: '700',
-                                      fontSize: 14,
-                                      textAlign: 'center',
-                                    }}
-                                  >
-                                    {eventItem.title}
-                                  </LabelText>
-                                  <LabelText style={{ fontSize: 13, color: defaultTheme.colors.slate900 }}>
-                                    {formatTime(eventItem.startTimeIso)}
-                                  </LabelText>
-                                </View>
-                              </Pressable>
-                            </Link>
-                          </View>
-                        ))}
-                      </ScrollView>
-                    </Card>
-                  ) : null}
+                            {formatMonthDay(startOfWeek)} – {formatMonthDay(addDays(startOfWeek, 6))}
+                          </LabelText>
+                        </View>
+                      </View>
 
-                  <Card accessibilityLabel={`${group.sportName} this week schedule`}>
-                    <LabelText
-                      style={{
-                        fontSize: defaultTheme.typography.h2.fontSize,
-                        fontWeight: defaultTheme.typography.h2.fontWeight,
-                        color: defaultTheme.colors.slate900,
-                        textAlign: 'center',
-                      }}
-                    >
-                      {formatMonthDay(startOfWeek)} – {formatMonthDay(addDays(startOfWeek, 6))}
-                    </LabelText>
-                  </Card>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Next sport"
+                        disabled={groupIndex === scheduleGroups.length - 1}
+                        onPress={() => scrollToSportPage(groupIndex + 1)}
+                        style={({ pressed }) => ({
+                          width: 40,
+                          height: 40,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginLeft: 25,
+                          opacity: groupIndex === scheduleGroups.length - 1 ? 0.3 : pressed ? 0.7 : 1,
+                        })}
+                      >
+                        <Ionicons name="chevron-forward" size={28} color={defaultTheme.colors.slate900} />
+                      </Pressable>
+                    </View>
+                  </View>
 
                   <ScrollView
                     horizontal
+                    scrollEnabled={activeHorizontalScroll !== 'sport'}
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={{ gap: 10 }}
+                    onTouchStart={lockToWeekCarousel}
+                    onTouchEnd={unlockFromWeekCarousel}
+                    onScrollBeginDrag={lockToWeekCarousel}
+                    onScrollEndDrag={unlockFromWeekCarousel}
+                    onMomentumScrollEnd={unlockFromWeekCarousel}
                   >
                     {weekBuckets.map((bucket) => {
                       const isToday =
@@ -373,7 +373,7 @@ export default function EventsScreen() {
                           accessibilityLabel={`${bucket.label} ${formatMonthDay(bucket.date)}: ${bucket.events.length} events`}
                           onPress={() => setSelectedDay(bucket.date)}
                           style={({ pressed }) => ({
-                            width: Math.max(140, Math.floor(pageWidth / 3)),
+                            width: Math.max(155, Math.floor(pageWidth / 3)),
                             borderWidth: 1,
                             borderColor: defaultTheme.colors.slate200,
                             borderRadius: defaultTheme.radius.md,
@@ -385,22 +385,40 @@ export default function EventsScreen() {
                           <View style={{ gap: defaultTheme.spacing.xs }}>
                             <View
                               style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                alignItems: 'baseline',
+                                backgroundColor: defaultTheme.colors.brandSecondary,
+                                marginTop: -defaultTheme.spacing.md,
+                                marginLeft: -defaultTheme.spacing.md,
+                                marginRight: -defaultTheme.spacing.md,
+                                paddingTop: defaultTheme.spacing.md,
+                                paddingBottom: defaultTheme.spacing.xs,
+                                paddingHorizontal: defaultTheme.spacing.md,
+                                borderTopLeftRadius: defaultTheme.radius.md,
+                                borderTopRightRadius: defaultTheme.radius.md,
                               }}
                             >
-                              <LabelText
+                              <View
                                 style={{
-                                  color: isToday ? defaultTheme.colors.brandSecondary : undefined,
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'baseline',
                                 }}
                               >
-                                {bucket.label}
-                              </LabelText>
-                              <LabelText style={{ fontSize: 12 }}>{bucket.date.getDate()}</LabelText>
+                                <LabelText style={{ color: defaultTheme.colors.white }}>
+                                  {bucket.label}
+                                </LabelText>
+                                <LabelText
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: '700',
+                                    color: defaultTheme.colors.white,
+                                  }}
+                                >
+                                  {bucket.date.getDate()}
+                                </LabelText>
+                              </View>
                             </View>
 
-                            <View style={{ gap: 6 }}>
+                            <View style={{ gap: 2 }}>
                               {dayEvents.length === 0 ? (
                                 <LabelText style={{ fontSize: 12 }}>No events</LabelText>
                               ) : null}
@@ -440,7 +458,7 @@ export default function EventsScreen() {
       </Section>
 
       <Section title="Calendar">
-        <Card accessibilityLabel="Monthly calendar">
+        <Card accessibilityLabel="Monthly calendar" style={{ backgroundColor: 'transparent' }}>
           <LabelText
             style={{
               fontSize: defaultTheme.typography.h2.fontSize,
@@ -516,11 +534,24 @@ export default function EventsScreen() {
                       ]}
                     >
                       <View style={{ gap: calendarGap }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <View
+                          style={{
+                            backgroundColor: defaultTheme.colors.brandSecondary,
+                            marginTop: -defaultTheme.spacing.xs,
+                            marginLeft: -defaultTheme.spacing.xs,
+                            marginRight: -defaultTheme.spacing.xs,
+                            paddingTop: defaultTheme.spacing.xs,
+                            paddingBottom: 4,
+                            paddingHorizontal: 8,
+                            borderTopLeftRadius: defaultTheme.radius.sm,
+                            borderTopRightRadius: defaultTheme.radius.sm,
+                          }}
+                        >
                           <LabelText
                             style={{
                               fontSize: 12,
-                              color: isToday ? defaultTheme.colors.brandSecondary : undefined,
+                              fontWeight: '700',
+                              color: defaultTheme.colors.white,
                             }}
                           >
                             {date.getDate()}

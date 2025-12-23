@@ -1,13 +1,29 @@
 import { Link } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Image, Pressable, View, type ImageSourcePropType } from 'react-native';
 
 import type { Sport } from '@tornado-nation/shared';
 import { LabelText, Screen } from '@tornado-nation/ui';
 import { defaultTheme } from '@tornado-nation/ui';
 
 import { api } from '../../../lib/api';
-import SportBadge from '../../../components/SportBadge';
+
+const teamBadgeSourceBySportId: Record<string, ImageSourcePropType> = {
+  baseball: require('../../../assets/sportsIcons/baseball.png'),
+  basketball: require('../../../assets/sportsIcons/basketball.png'),
+  bowling: require('../../../assets/sportsIcons/bowling.png'),
+  cheer: require('../../../assets/sportsIcons/cheer.png'),
+  football: require('../../../assets/sportsIcons/football.png'),
+  golf: require('../../../assets/sportsIcons/golf.png'),
+  lacrosse: require('../../../assets/sportsIcons/lacrosse.png'),
+  soccer: require('../../../assets/sportsIcons/soccer.png'),
+  softball: require('../../../assets/sportsIcons/softball.png'),
+  swim: require('../../../assets/sportsIcons/swim.png'),
+  tennis: require('../../../assets/sportsIcons/tennis.png'),
+  track: require('../../../assets/sportsIcons/track&field.png'),
+  volleyball: require('../../../assets/sportsIcons/volleyball.png'),
+  wrestling: require('../../../assets/sportsIcons/wrestling.png'),
+};
 
 const BADGE_SIZE = 125;
 
@@ -29,43 +45,6 @@ const fallbackSports: Sport[] = [
   { id: 'wrestling', name: 'Wrestling', slug: 'wrestling' },
 ];
 
-function badgeLabelLines(label: string): string[] {
-  const upper = label.toUpperCase().trim();
-  const parts = upper.split(/\s+/).filter(Boolean);
-  // Single word stays on one line; multi-word stacks (one per line).
-  return parts.length <= 1 ? [upper] : parts;
-}
-
-function computeUniformFontSizes(items: Array<{ name: string }>) {
-  const maxWidth = BADGE_SIZE * 0.92;
-  const maxHeight = BADGE_SIZE * 0.78;
-  const letterSpacing = 1;
-  const estimatedCharWidth = 0.62;
-  const lineHeightFactor = 1.05;
-
-  const maxLineLenByLines: Record<number, number> = { 1: 1, 2: 1, 3: 1 };
-  for (const item of items) {
-    const lines = badgeLabelLines(item.name);
-    const key = Math.min(3, Math.max(1, lines.length));
-    const longest = Math.max(...lines.map((l) => l.length), 1);
-    maxLineLenByLines[key] = Math.max(maxLineLenByLines[key] ?? 1, longest);
-  }
-
-  const targetByLines: Record<number, number> = { 1: 52, 2: 44, 3: 36 };
-  const result: Record<number, number> = {};
-
-  for (const key of [1, 2, 3]) {
-    const longestLineLen = maxLineLenByLines[key] ?? 1;
-    const widthLimited =
-      (maxWidth - letterSpacing * Math.max(0, longestLineLen - 1)) / (estimatedCharWidth * longestLineLen);
-    const heightLimited = maxHeight / (key * lineHeightFactor);
-    const limited = Math.floor(Math.min(targetByLines[key], widthLimited, heightLimited));
-    result[key] = Math.max(18, limited);
-  }
-
-  return result;
-}
-
 export default function TeamsSportsListScreen() {
   const sportsQuery = useQuery({
     queryKey: ['sports'],
@@ -73,7 +52,6 @@ export default function TeamsSportsListScreen() {
   });
 
   const sports = sportsQuery.data ?? fallbackSports;
-  const uniformFontSizes = computeUniformFontSizes(sports);
 
   return (
     <Screen>
@@ -103,41 +81,12 @@ export default function TeamsSportsListScreen() {
                   })}
                 >
                   <View style={{ width: BADGE_SIZE, height: BADGE_SIZE, justifyContent: 'center', alignItems: 'center' }}>
-                    <SportBadge sportId={item.id} size={BADGE_SIZE} />
-                    {(() => {
-                      const lines = badgeLabelLines(item.name);
-                      const fontSize = uniformFontSizes[Math.min(3, Math.max(1, lines.length))] ?? 18;
-                      const text = lines.join('\n');
-                      const isSingleWord = lines.length === 1;
-
-                      return (
-                        <View
-                          pointerEvents="none"
-                          style={{
-                            position: 'absolute',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: BADGE_SIZE * 0.95,
-                          }}
-                        >
-                          <Text
-                            accessibilityLabel={`${item.name} label`}
-                            numberOfLines={isSingleWord ? 1 : lines.length}
-                            style={{
-                              fontSize,
-                              fontWeight: '800',
-                              letterSpacing: 1,
-                              lineHeight: Math.round(fontSize * 1.05),
-                              textAlign: 'center',
-                              color: defaultTheme.colors.slate900,
-                              maxWidth: BADGE_SIZE * 0.92,
-                            }}
-                          >
-                            {text}
-                          </Text>
-                        </View>
-                      );
-                    })()}
+                    <Image
+                      accessibilityLabel="Sport icon"
+                      source={teamBadgeSourceBySportId[item.id]}
+                      resizeMode="contain"
+                      style={{ width: BADGE_SIZE, height: BADGE_SIZE }}
+                    />
                   </View>
                 </Pressable>
               </Link>

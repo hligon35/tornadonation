@@ -1,45 +1,7 @@
 import { Link } from 'expo-router';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 
 import { Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
-
-function iconForTeamId(id: string): keyof typeof Ionicons.glyphMap {
-  switch (id) {
-    case 'baseball':
-      return 'baseball-outline';
-    case 'basketball':
-      return 'basketball-outline';
-    case 'bowling':
-      return 'bowling-ball-outline';
-    case 'cheer':
-      return 'megaphone-outline';
-    case 'cross-country':
-      return 'walk-outline';
-    case 'football':
-      return 'american-football-outline';
-    case 'golf':
-      return 'golf-outline';
-    case 'lacrosse':
-      return 'fitness-outline';
-    case 'soccer':
-      return 'football-outline';
-    case 'softball':
-      return 'baseball-outline';
-    case 'swim':
-      return 'water-outline';
-    case 'tennis':
-      return 'tennisball-outline';
-    case 'track':
-      return 'speedometer-outline';
-    case 'volleyball':
-      return 'tennisball-outline';
-    case 'wrestling':
-      return 'barbell-outline';
-    default:
-      return 'trophy-outline';
-  }
-}
 
 const teams = [
   { id: 'baseball', name: 'Baseball' },
@@ -59,6 +21,23 @@ const teams = [
   { id: 'wrestling', name: 'Wrestling' },
 ];
 
+const badgeForTeamId: Partial<Record<(typeof teams)[number]['id'], any>> = {
+  baseball: require('../../../assets/badges/baseball.png'),
+  basketball: require('../../../assets/badges/basketball.png'),
+  bowling: require('../../../assets/badges/bowling.png'),
+  cheer: require('../../../assets/badges/cheer.png'),
+  football: require('../../../assets/badges/football.png'),
+  golf: require('../../../assets/badges/golf.png'),
+  lacrosse: require('../../../assets/badges/lacrosse.png'),
+  soccer: require('../../../assets/badges/soccer.png'),
+  softball: require('../../../assets/badges/softball.png'),
+  swim: require('../../../assets/badges/swim.png'),
+  tennis: require('../../../assets/badges/tennis.png'),
+  track: require('../../../assets/badges/track.png'),
+  volleyball: require('../../../assets/badges/volleyball.png'),
+  wrestling: require('../../../assets/badges/wrestling.png'),
+};
+
 type StreamStatus = 'live' | 'scheduled';
 
 type TeamStream = {
@@ -66,6 +45,7 @@ type TeamStream = {
   teamId: string;
   status: StreamStatus;
   startTimeIso: string;
+  opponent: string;
 };
 
 function addHours(date: Date, hours: number) {
@@ -92,18 +72,21 @@ export default function LiveScreen() {
       teamId: 'football',
       status: 'live',
       startTimeIso: addHours(now, -1).toISOString(),
+      opponent: 'Riverton',
     },
     {
       id: 'stream-basketball-next',
       teamId: 'basketball',
       status: 'scheduled',
       startTimeIso: addHours(now, 3).toISOString(),
+      opponent: 'Central',
     },
     {
       id: 'stream-soccer-next',
       teamId: 'soccer',
       status: 'scheduled',
       startTimeIso: addHours(now, 28).toISOString(),
+      opponent: 'Westview',
     },
   ];
 
@@ -130,63 +113,79 @@ export default function LiveScreen() {
     });
 
   const renderTeamRow = (team: (typeof teams)[number]) => {
+    const liveStream = streams.find((s) => s.teamId === team.id && s.status === 'live');
     const nextStream = nextScheduledByTeamId.get(team.id);
-    const nextLabel = nextStream ? formatDateTimeShort(nextStream.startTimeIso) : 'No upcoming stream';
+    const stream = liveStream ?? nextStream;
+    const dateLabel = stream ? formatDateTimeShort(stream.startTimeIso) : 'No upcoming stream';
+    const opponentLabel = stream ? `VS ${stream.opponent}` : 'VS TBA';
+    const badgeSource = badgeForTeamId[team.id];
+    const cardTextStyle = { fontWeight: '700' as const };
+    const streamHref = stream ? (`/(tabs)/live/${stream.id}` as const) : (`/(tabs)/live/${team.id}` as const);
 
     return (
-      <Link key={team.id} href={`/(tabs)/live/${team.id}`} asChild>
+      <Link key={team.id} href={streamHref} asChild>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${team.name} live section`}
+          accessibilityLabel={`${team.name} stream details`}
           style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
         >
-          <Card style={{ gap: 10 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-              <LabelText style={{ fontSize: 12, textAlign: 'right' }}>{nextLabel}</LabelText>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+          <Card style={{ flexDirection: 'row', alignItems: 'stretch', gap: 12 }}>
+            <View style={{ flex: 1, gap: 10 }}>
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <View
+                  accessibilityLabel={`${team.name} matchup badge`}
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    overflow: 'hidden',
-                    backgroundColor: defaultTheme.colors.slate200,
-                    borderWidth: 1,
-                    borderColor: defaultTheme.colors.slate200,
+                    width: 160,
+                    height: 90,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
                 >
-                  <Ionicons
-                    accessibilityLabel={`${team.name} icon`}
-                    name={iconForTeamId(team.id)}
-                    size={24}
-                    color={defaultTheme.colors.slate900}
-                  />
+                  {badgeSource ? (
+                    <Image
+                      source={badgeSource}
+                      resizeMode="contain"
+                      style={{ width: 160, height: 160, opacity: 0.35 }}
+                    />
+                  ) : null}
+
+                  <View
+                    pointerEvents="none"
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: 2,
+                    }}
+                  >
+                    <LabelText style={[{ textAlign: 'center' }, cardTextStyle]}>{opponentLabel}</LabelText>
+                    <LabelText style={[{ fontSize: 12, textAlign: 'center' }, cardTextStyle]}>
+                      {dateLabel}
+                    </LabelText>
+                  </View>
                 </View>
-
-                <LabelText style={{ flexShrink: 1 }}>{team.name}</LabelText>
               </View>
+            </View>
 
-              <View
-                accessibilityLabel={`${team.name} video thumbnail`}
-                style={{
-                  width: 140,
-                  aspectRatio: 16 / 9,
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  borderWidth: 1,
-                  borderColor: defaultTheme.colors.slate200,
-                  backgroundColor: defaultTheme.colors.slate200,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <LabelText style={{ fontSize: 12 }}>Video</LabelText>
-              </View>
+            <View
+              accessibilityLabel={`${team.name} video thumbnail`}
+              style={{
+                width: 140,
+                height: 120,
+                borderRadius: 12,
+                overflow: 'hidden',
+                borderWidth: 1,
+                borderColor: defaultTheme.colors.slate200,
+                backgroundColor: defaultTheme.colors.slate200,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <LabelText style={[{ fontSize: 12 }, cardTextStyle]}>Video</LabelText>
             </View>
           </Card>
         </Pressable>

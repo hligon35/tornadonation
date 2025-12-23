@@ -6,7 +6,7 @@ import BrandHeaderTitle from '../../../components/BrandHeaderTitle';
 
 const accountIcon = require('../../../assets/navIcons/account.png');
 
-export default function TeamsLayout() {
+export default function HomeTabLayout() {
   return (
     <Stack
       screenOptions={{
@@ -15,6 +15,7 @@ export default function TeamsLayout() {
         headerStyle: { backgroundColor: defaultTheme.colors.brandSecondary },
         headerTintColor: defaultTheme.colors.slate900,
         headerTitleStyle: { color: defaultTheme.colors.slate900 },
+        headerTitle: () => <BrandHeaderTitle />,
         headerRight: () => (
           <Link href="/profile" asChild>
             <Pressable
@@ -35,13 +36,7 @@ export default function TeamsLayout() {
         ),
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{
-          title: 'Teams',
-          headerTitle: () => <BrandHeaderTitle />,
-        }}
-      />
+      <Stack.Screen name="index" options={{ title: 'Home' }} />
     </Stack>
   );
 }

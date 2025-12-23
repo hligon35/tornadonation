@@ -13,6 +13,8 @@ import {
 
 import { Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
 
+import SportBadge from '../../../components/SportBadge';
+
 type QuickAction = {
   id: string;
   title: string;
@@ -72,10 +74,7 @@ const TICKER_ITEMS: string[] = [
   'Next: Basketball @ East • 7:30 PM',
 ];
 
-function QuickActionTile(props: {
-  action: QuickAction;
-  onPress: () => void;
-}) {
+function QuickActionTile(props: { action: QuickAction; onPress: () => void }) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -98,11 +97,7 @@ function QuickActionTile(props: {
   );
 }
 
-function QuickActionListRow(props: {
-  action: QuickAction;
-  selected: boolean;
-  onToggle: () => void;
-}) {
+function QuickActionListRow(props: { action: QuickAction; selected: boolean; onToggle: () => void }) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -327,8 +322,8 @@ function ScrollCardCarousel(props: { cardWidth: number }) {
               accessibilityLabel={`${team.name} favorite team`}
               style={[styles.favoriteCard, { width: props.cardWidth, minHeight: 260 }]}
             >
-              <View style={styles.favoriteImage} accessibilityLabel={`${team.name} tile placeholder`}>
-                <Ionicons name={team.icon} size={64} color={defaultTheme.colors.slate900} />
+              <View style={styles.favoriteImage} accessibilityLabel={`${team.name} badge`}>
+                <SportBadge sportId={team.id} size={120} />
               </View>
               <View style={{ padding: defaultTheme.spacing.md, gap: 4 }}>
                 <LabelText style={styles.favoriteName}>{team.name}</LabelText>
@@ -392,7 +387,7 @@ const styles = StyleSheet.create({
   favoriteImage: {
     width: '100%',
     height: 180,
-    backgroundColor: defaultTheme.colors.slate200,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },

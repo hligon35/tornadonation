@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.4",
-    "@expo/vector-icons": "^15.0.3",
     "@expo/metro-runtime": "^6.1.2",
+    "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-navigation/native": "^7.1.8",
     "@tanstack/query-async-storage-persister": "^5.90.14",
@@ -30,6 +30,7 @@
     "expo-router": "~6.0.21",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
+    "expo-video": "~3.0.15",
     "expo-web-browser": "~15.0.10",
     "react": "19.1.0",
     "react-dom": "19.1.0",

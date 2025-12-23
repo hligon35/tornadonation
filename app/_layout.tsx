@@ -5,14 +5,19 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Image, Pressable, View } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import AppBackground from '@/components/AppBackground';
+import BrandHeaderTitle from '@/components/BrandHeaderTitle';
+import StartupVideoSplash from '@/components/StartupVideoSplash';
 import { defaultTheme } from '@tornado-nation/ui';
+
+const accountIcon = require('../assets/navIcons/account.png');
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -34,20 +39,45 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
+  const [minSplashTimePassed, setMinSplashTimePassed] = useState(false);
+
+  const [nativeSplashHidden, setNativeSplashHidden] = useState(false);
+
+  const onRootLayout = useCallback(() => {
+    if (nativeSplashHidden) return;
+    void SplashScreen.hideAsync()
+      .catch(() => {
+        // Ignore errors (e.g., already hidden)
+      })
+      .finally(() => {
+        setNativeSplashHidden(true);
+      });
+  }, [nativeSplashHidden]);
+
+  // We hide the native splash on first layout so the video splash can render.
+
   useEffect(() => {
-    if (loaded) {
-      void SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    const MIN_SPLASH_MS = 5000;
+    const timer = setTimeout(() => {
+      setMinSplashTimePassed(true);
+    }, MIN_SPLASH_MS);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, []);
 
   if (error) {
     throw error;
   }
 
-  if (!loaded) {
-    return null;
-  }
-  return <RootLayoutNav />;
+  const isAppReady = loaded && minSplashTimePassed;
+
+  return (
+    <View style={{ flex: 1 }} onLayout={onRootLayout}>
+      {isAppReady ? <RootLayoutNav /> : <StartupVideoSplash />}
+    </View>
+  );
 }
 
 const queryClient = new QueryClient({
@@ -100,9 +130,57 @@ function RootLayoutNav() {
               headerTitleStyle: {
                 color: defaultTheme.colors.slate900,
               },
+              headerTitle: () => <BrandHeaderTitle />,
+              headerRight: () => (
+                <Link href="/profile" asChild>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Open profile"
+                    hitSlop={10}
+                    style={{ paddingHorizontal: 12 }}
+                  >
+                    {({ pressed }) => (
+                        <Image
+                          source={accountIcon}
+                          resizeMode="contain"
+                          style={{ width: 40, height: 40, opacity: pressed ? 0.6 : 1 }}
+                      />
+                    )}
+                  </Pressable>
+                </Link>
+              ),
             }}
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="profile/index" options={{ title: 'PROFILE' }} />
+            <Stack.Screen name="profile/passes" options={{ title: 'Passes' }} />
+            <Stack.Screen name="profile/memberships" options={{ title: 'Memberships' }} />
+            <Stack.Screen name="profile/orders" options={{ title: 'Orders' }} />
+            <Stack.Screen name="profile/notifications" options={{ title: 'Notifications' }} />
+
+            <Stack.Screen name="profile/settings/index" options={{ title: 'Settings' }} />
+            <Stack.Screen
+              name="profile/settings/favorite-teams"
+              options={{ title: 'Favorite Teams' }}
+            />
+            <Stack.Screen name="profile/settings/account-info" options={{ title: 'Account Info' }} />
+            <Stack.Screen
+              name="profile/settings/payment-methods"
+              options={{ title: 'Payment Methods' }}
+            />
+            <Stack.Screen
+              name="profile/settings/privacy-permissions"
+              options={{ title: 'Privacy & Permissions' }}
+            />
+            <Stack.Screen name="profile/settings/app-theme" options={{ title: 'App Theme' }} />
+            <Stack.Screen
+              name="profile/settings/help-support"
+              options={{ title: 'Help & Support' }}
+            />
+            <Stack.Screen
+              name="profile/settings/terms-policies"
+              options={{ title: 'Terms & Policies' }}
+            />
           </Stack>
         </AppBackground>
       </ThemeProvider>

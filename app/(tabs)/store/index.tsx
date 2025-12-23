@@ -54,29 +54,95 @@ function formatMoney(priceCents: number, currency: string) {
   return `${(priceCents / 100).toFixed(2)} ${currency}`;
 }
 
-function OptionPill(props: {
+function colorSwatchForName(colorName: string): { fill: string; border?: string } {
+  const normalized = colorName.trim().toLowerCase();
+
+  // Use existing theme tokens only.
+  if (normalized === 'black') {
+    return { fill: defaultTheme.colors.slate900 };
+  }
+  if (normalized === 'white') {
+    return { fill: defaultTheme.colors.white, border: defaultTheme.colors.slate200 };
+  }
+
+  // Fallback: neutral swatch.
+  return { fill: defaultTheme.colors.slate500, border: defaultTheme.colors.slate200 };
+}
+
+function DropdownField(props: {
   label: string;
-  selected: boolean;
-  onPress: () => void;
+  valueLabel: string;
+  open: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+  swatch?: { fill: string; border?: string };
+  children?: React.ReactNode;
   accessibilityLabel: string;
 }) {
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={props.accessibilityLabel}
-      onPress={props.onPress}
-      style={({ pressed }) => ({
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        borderRadius: 999,
-        borderWidth: 1,
-        borderColor: defaultTheme.colors.slate200,
-        backgroundColor: props.selected ? defaultTheme.colors.slate200 : defaultTheme.colors.white,
-        opacity: pressed ? 0.85 : 1,
-      })}
-    >
-      <LabelText style={{ fontSize: 12 }}>{props.label}</LabelText>
-    </Pressable>
+    <View style={{ flex: 1, gap: 6 }} accessibilityLabel={props.accessibilityLabel}>
+      <LabelText style={{ fontSize: 12, textAlign: 'center' }}>{props.label}</LabelText>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${props.label} dropdown`}
+        disabled={props.disabled}
+        onPress={props.onToggle}
+        style={({ pressed }) => ({
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 8,
+          borderWidth: 1,
+          borderColor: defaultTheme.colors.slate200,
+          borderRadius: defaultTheme.radius.md,
+          backgroundColor: defaultTheme.colors.white,
+          paddingVertical: 7,
+          paddingHorizontal: 8,
+          opacity: props.disabled ? 0.5 : pressed ? 0.85 : 1,
+        })}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
+          {props.swatch ? (
+            <View
+              accessibilityLabel={`${props.valueLabel} color swatch`}
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 999,
+                backgroundColor: props.swatch.fill,
+                borderWidth: props.swatch.border ? 1 : 0,
+                borderColor: props.swatch.border,
+              }}
+            />
+          ) : null}
+          <LabelText numberOfLines={1} style={{ fontSize: 11, color: defaultTheme.colors.slate900 }}>
+            {props.valueLabel}
+          </LabelText>
+        </View>
+
+        <Ionicons
+          name={props.open ? 'chevron-up-outline' : 'chevron-down-outline'}
+          size={15}
+          color={defaultTheme.colors.slate900}
+          style={{ marginRight: -2 }}
+        />
+      </Pressable>
+
+      {props.open ? (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: defaultTheme.colors.slate200,
+            borderRadius: defaultTheme.radius.md,
+            overflow: 'hidden',
+            backgroundColor: defaultTheme.colors.white,
+          }}
+        >
+          {props.children}
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -90,7 +156,16 @@ function QuantityStepper(props: {
   const plusDisabled = props.disabled;
 
   return (
-    <View accessibilityLabel={props.accessibilityLabel} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+    <View
+      accessibilityLabel={props.accessibilityLabel}
+      style={{
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+      }}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Decrease quantity"
@@ -141,80 +216,148 @@ function ProductTile(props: { product: StoreProductView }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(props.product.sizes?.[0]);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(props.product.colors?.[0]);
+  const [openDropdown, setOpenDropdown] = useState<null | 'size' | 'color'>(null);
 
   const disabled = !props.product.inStock;
+
+  const sizeOptions = props.product.sizes ?? [];
+  const colorOptions = props.product.colors ?? [];
+
+  const effectiveSize = sizeOptions.length ? (selectedSize ?? sizeOptions[0]) : 'One Size';
+  const effectiveColor = colorOptions.length ? (selectedColor ?? colorOptions[0]) : 'Default';
 
   return (
     <Card
       accessibilityLabel={`${props.product.title} product tile`}
-      style={{ flex: 1, minHeight: 460 }}
+      style={{ flex: 1 }}
     >
-      <View style={{ flex: 1, justifyContent: 'space-between', gap: 8 }}>
+      <View style={{ gap: 10 }}>
         <View style={{ gap: 8 }}>
-          <View
-            accessibilityLabel={`${props.product.title} image`}
-            style={{
-              width: '100%',
-              aspectRatio: 1,
-              borderRadius: 12,
-              overflow: 'hidden',
-              backgroundColor: defaultTheme.colors.slate200,
-              borderWidth: 1,
-              borderColor: defaultTheme.colors.slate200,
-            }}
-          >
-            <Ionicons
-              accessibilityLabel={`${props.product.title} icon`}
-              name={props.product.icon}
-              size={56}
-              color={defaultTheme.colors.slate900}
-              style={{ alignSelf: 'center', marginTop: 18 }}
-            />
+          <View style={{ position: 'relative', overflow: 'visible' }}>
+            <View
+              accessibilityLabel={`${props.product.title} image`}
+              style={{
+                width: '100%',
+                aspectRatio: 1.4,
+                borderRadius: 12,
+                overflow: 'hidden',
+                backgroundColor: defaultTheme.colors.slate200,
+                borderWidth: 1,
+                borderColor: defaultTheme.colors.slate200,
+              }}
+            >
+              <Ionicons
+                accessibilityLabel={`${props.product.title} icon`}
+                name={props.product.icon}
+                size={44}
+                color={defaultTheme.colors.slate900}
+                style={{ alignSelf: 'center', marginTop: 12 }}
+              />
+            </View>
+
+            <View
+              accessibilityLabel={`${props.product.title} price`}
+              style={{
+                position: 'absolute',
+                top: -10,
+                left: -10,
+                backgroundColor: defaultTheme.colors.brandSecondary,
+                paddingVertical: 2,
+                paddingHorizontal: 3,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: defaultTheme.colors.slate900,
+              }}
+            >
+              <LabelText style={{ fontSize: 12, fontWeight: '800', color: defaultTheme.colors.white }}>
+                {formatMoney(props.product.priceCents, props.product.currency)}
+              </LabelText>
+            </View>
           </View>
 
           <View style={{ gap: 5 }}>
             <LabelText numberOfLines={1}>{props.product.title}</LabelText>
-            <LabelText style={{ fontSize: 12 }} numberOfLines={2}>
+            <LabelText style={{ fontSize: 12 }} numberOfLines={1}>
               {props.product.description}
-            </LabelText>
-            <LabelText style={{ fontSize: 12 }}>
-              {formatMoney(props.product.priceCents, props.product.currency)}
             </LabelText>
           </View>
 
-          {props.product.sizes?.length ? (
-            <View style={{ gap: 6 }}>
-              <LabelText style={{ fontSize: 12 }}>Size</LabelText>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {props.product.sizes.map((size) => (
-                  <OptionPill
-                    key={size}
-                    label={size}
-                    selected={size === selectedSize}
-                    onPress={() => setSelectedSize(size)}
-                    accessibilityLabel={`${props.product.title} size ${size}`}
-                  />
-                ))}
-              </View>
-            </View>
-          ) : null}
+          <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+            <DropdownField
+              label="Size"
+              valueLabel={effectiveSize}
+              disabled={!sizeOptions.length}
+              open={openDropdown === 'size'}
+              onToggle={() => setOpenDropdown((prev) => (prev === 'size' ? null : 'size'))}
+              accessibilityLabel={`${props.product.title} size`}
+            >
+              {sizeOptions.map((size) => (
+                <Pressable
+                  key={size}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${props.product.title} select size ${size}`}
+                  onPress={() => {
+                    setSelectedSize(size);
+                    setOpenDropdown(null);
+                  }}
+                  style={({ pressed }) => ({
+                    paddingVertical: 8,
+                    paddingHorizontal: 8,
+                    backgroundColor: size === effectiveSize ? defaultTheme.colors.slate200 : defaultTheme.colors.white,
+                    opacity: pressed ? 0.85 : 1,
+                  })}
+                >
+                  <LabelText style={{ fontSize: 11, color: defaultTheme.colors.slate900 }}>{size}</LabelText>
+                </Pressable>
+              ))}
+            </DropdownField>
 
-          {props.product.colors?.length ? (
-            <View style={{ gap: 6 }}>
-              <LabelText style={{ fontSize: 12 }}>Color</LabelText>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {props.product.colors.map((color) => (
-                  <OptionPill
+            <DropdownField
+              label="Color"
+              valueLabel={effectiveColor}
+              disabled={!colorOptions.length}
+              open={openDropdown === 'color'}
+              onToggle={() => setOpenDropdown((prev) => (prev === 'color' ? null : 'color'))}
+              swatch={colorSwatchForName(effectiveColor)}
+              accessibilityLabel={`${props.product.title} color`}
+            >
+              {colorOptions.map((color) => {
+                const swatch = colorSwatchForName(color);
+                return (
+                  <Pressable
                     key={color}
-                    label={color}
-                    selected={color === selectedColor}
-                    onPress={() => setSelectedColor(color)}
-                    accessibilityLabel={`${props.product.title} color ${color}`}
-                  />
-                ))}
-              </View>
-            </View>
-          ) : null}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${props.product.title} select color ${color}`}
+                    onPress={() => {
+                      setSelectedColor(color);
+                      setOpenDropdown(null);
+                    }}
+                    style={({ pressed }) => ({
+                      paddingVertical: 8,
+                      paddingHorizontal: 8,
+                      backgroundColor: color === effectiveColor ? defaultTheme.colors.slate200 : defaultTheme.colors.white,
+                      opacity: pressed ? 0.85 : 1,
+                    })}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View
+                        accessibilityLabel={`${color} color swatch`}
+                        style={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: 999,
+                          backgroundColor: swatch.fill,
+                          borderWidth: swatch.border ? 1 : 0,
+                          borderColor: swatch.border,
+                        }}
+                      />
+                      <LabelText style={{ fontSize: 11, color: defaultTheme.colors.slate900 }}>{color}</LabelText>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </DropdownField>
+          </View>
         </View>
 
         <View style={{ gap: 8 }}>
@@ -281,8 +424,8 @@ export default function StoreScreen() {
           keyExtractor={(item) => item.id}
           numColumns={2}
           scrollEnabled={false}
-          columnWrapperStyle={{ gap: 12, alignItems: 'stretch' }}
-          contentContainerStyle={{ gap: 12, paddingTop: 4 }}
+          columnWrapperStyle={{ gap: 8, alignItems: 'stretch' }}
+          contentContainerStyle={{ gap: 8, paddingTop: 0 }}
           renderItem={({ item }) => (
             <View style={{ flex: 1 }}>
               <ProductTile product={item} />

@@ -3,7 +3,10 @@
     "name": "TornadoNation (Snack Demo)",
     "slug": "tornadonation-snack-demo",
     "version": "1.0.0",
-    "assetBundlePatterns": ["assets/**/*"],
+    "icon": "./assets/images/icon.png",
+    "assetBundlePatterns": [
+      "assets/**/*"
+    ],
     "orientation": "portrait",
     "scheme": "tornadonation-snack",
     "userInterfaceStyle": "automatic",
@@ -27,7 +30,8 @@
       "output": "static"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

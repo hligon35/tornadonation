@@ -1,10 +1,8 @@
 import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Image, Pressable, type ImageSourcePropType } from 'react-native';
+import { Tabs } from 'expo-router';
+import { Image, StyleSheet, Text, type ImageSourcePropType } from 'react-native';
 
 import { defaultTheme } from '@tornado-nation/ui';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 
 const navIconTeams = require('../../assets/navIcons/teams.png');
 const navIconEvents = require('../../assets/navIcons/events.png');
@@ -12,13 +10,12 @@ const navIconHome = require('../../assets/navIcons/home.png');
 const navIconLive = require('../../assets/navIcons/live.png');
 const navIconStore = require('../../assets/navIcons/store.png');
 
-// When you add separate active assets later, replace these with e.g.
-// require('../../assets/navIcons/teams-active.png') etc.
-const navIconTeamsActive = navIconTeams;
-const navIconEventsActive = navIconEvents;
-const navIconHomeActive = navIconHome;
-const navIconLiveActive = navIconLive;
-const navIconStoreActive = navIconStore;
+const navIconTeamsActive = require('../../assets/activeIcons/teams.png');
+const navIconEventsActive = require('../../assets/activeIcons/events.png');
+const navIconHomeActive = require('../../assets/activeIcons/home.png');
+const navIconLiveActive = require('../../assets/activeIcons/live.png');
+const navIconStoreActive = require('../../assets/activeIcons/store.png');
+
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -35,6 +32,32 @@ function TabBarIcon(props: {
   );
 }
 
+function TabBarLabel(props: { focused: boolean; color: string; children: React.ReactNode }) {
+  return (
+    <Text
+      style={[
+        styles.tabLabelBase,
+        { color: props.color },
+        props.focused ? styles.tabLabelActive : null,
+      ]}
+    >
+      {props.children}
+    </Text>
+  );
+}
+
+const styles = StyleSheet.create({
+  tabLabelBase: {
+    fontSize: 12,
+  },
+  tabLabelActive: {
+    fontWeight: '900',
+    textShadowColor: defaultTheme.colors.white,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 6,
+  },
+});
+
 export default function TabLayout() {
   return (
     <Tabs
@@ -42,37 +65,12 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: defaultTheme.colors.brandSecondary,
         },
-        tabBarActiveTintColor: defaultTheme.colors.slate500,
+        tabBarActiveTintColor: defaultTheme.colors.slate900,
         tabBarInactiveTintColor: defaultTheme.colors.slate900,
-        headerTitleAlign: 'center',
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-        headerStyle: {
-          backgroundColor: defaultTheme.colors.brandSecondary,
-        },
-        headerTintColor: defaultTheme.colors.slate900,
-        headerTitleStyle: {
-          color: defaultTheme.colors.slate900,
-        },
-        headerRight: () => (
-          <Link href="/profile" asChild>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Open profile"
-              hitSlop={10}
-              style={{ paddingHorizontal: 12 }}
-            >
-              {({ pressed }) => (
-                <FontAwesome
-                  name="user"
-                  size={22}
-                  color={defaultTheme.colors.slate900}
-                  style={{ opacity: pressed ? 0.6 : 1 }}
-                />
-              )}
-            </Pressable>
-          </Link>
+        tabBarLabel: ({ focused, color, children }) => (
+          <TabBarLabel focused={focused} color={color}>
+            {children}
+          </TabBarLabel>
         ),
       }}
     >
@@ -80,6 +78,7 @@ export default function TabLayout() {
         name="teams"
         options={{
           title: 'Teams',
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} source={navIconTeams} activeSource={navIconTeamsActive} />
           ),
@@ -89,15 +88,17 @@ export default function TabLayout() {
         name="events"
         options={{
           title: 'Events',
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} source={navIconEvents} activeSource={navIconEventsActive} />
           ),
         }}
       />
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
           title: 'Home',
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} source={navIconHome} activeSource={navIconHomeActive} />
           ),
@@ -107,6 +108,7 @@ export default function TabLayout() {
         name="live"
         options={{
           title: 'Live',
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} source={navIconLive} activeSource={navIconLiveActive} />
           ),
@@ -116,6 +118,7 @@ export default function TabLayout() {
         name="store"
         options={{
           title: 'Store',
+          headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabBarIcon focused={focused} source={navIconStore} activeSource={navIconStoreActive} />
           ),
@@ -124,3 +127,4 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
