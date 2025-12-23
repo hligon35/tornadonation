@@ -128,14 +128,13 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
     // Outer padding so tiles don't touch screen edges.
-    paddingHorizontal: defaultTheme.spacing.sm,
+    paddingHorizontal: defaultTheme.spacing.md,
   },
   tile: {
-    width: '50%',
-    paddingHorizontal: defaultTheme.spacing.sm,
-    paddingBottom: defaultTheme.spacing.md,
+    width: '46%',
+    marginBottom: 64,
   },
   tilePressed: {
     opacity: 0.85,
