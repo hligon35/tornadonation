@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 
 import { Card, LabelText, Screen, Section, defaultTheme } from '@tornado-nation/ui';
 
@@ -96,17 +96,16 @@ export default function TeamSeasonScreen() {
               aspectRatio: 16 / 9,
               borderRadius: defaultTheme.radius.md,
               overflow: 'hidden',
-              backgroundColor: defaultTheme.colors.slate200,
-              borderWidth: 1,
-              borderColor: defaultTheme.colors.slate200,
+              backgroundColor: 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <Ionicons
-              accessibilityLabel={`${sportName} icon`}
-              name={iconForSportId(sportId)}
-              size={64}
-              color={defaultTheme.colors.slate900}
-              style={{ alignSelf: 'center', marginTop: 26 }}
+            <Image
+              accessibilityLabel={`${sportName} champion icon`}
+              source={require('../../../../assets/images/champ.png')}
+              resizeMode="contain"
+              style={{ width: 120, height: 120 }}
             />
           </View>
 

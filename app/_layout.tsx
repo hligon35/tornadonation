@@ -5,19 +5,20 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { useFonts } from 'expo-font';
-import { Link, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import AppBackground from '@/components/AppBackground';
 import BrandHeaderTitle from '@/components/BrandHeaderTitle';
+import HeaderActions from '@/components/HeaderActions';
 import StartupVideoSplash from '@/components/StartupVideoSplash';
 import { defaultTheme } from '@tornado-nation/ui';
 
-const accountIcon = require('../assets/navIcons/account.png');
+import { CartProvider } from '@/lib/store/cart-context';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -114,76 +115,67 @@ function RootLayoutNav() {
         maxAge: 1000 * 60 * 60 * 24,
       }}
     >
-      <ThemeProvider value={navTheme}>
-        <AppBackground>
-          <Stack
-            screenOptions={{
-              headerBackButtonDisplayMode: 'minimal',
-              headerTitleAlign: 'center',
-              contentStyle: {
-                backgroundColor: 'rgba(128, 128, 128, 0.25)',
-              },
-              headerStyle: {
-                backgroundColor: defaultTheme.colors.brandSecondary,
-              },
-              headerTintColor: defaultTheme.colors.slate900,
-              headerTitleStyle: {
-                color: defaultTheme.colors.slate900,
-              },
-              headerTitle: () => <BrandHeaderTitle />,
-              headerRight: () => (
-                <Link href="/profile" asChild>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Open profile"
-                    hitSlop={10}
-                    style={{ paddingHorizontal: 12 }}
-                  >
-                    {({ pressed }) => (
-                        <Image
-                          source={accountIcon}
-                          resizeMode="contain"
-                          style={{ width: 40, height: 40, opacity: pressed ? 0.6 : 1 }}
-                      />
-                    )}
-                  </Pressable>
-                </Link>
-              ),
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="profile/index" options={{ title: 'PROFILE' }} />
-            <Stack.Screen name="profile/passes" options={{ title: 'Passes' }} />
-            <Stack.Screen name="profile/memberships" options={{ title: 'Memberships' }} />
-            <Stack.Screen name="profile/orders" options={{ title: 'Orders' }} />
-            <Stack.Screen name="profile/notifications" options={{ title: 'Notifications' }} />
+      <CartProvider>
+        <ThemeProvider value={navTheme}>
+          <AppBackground>
+            <Stack
+              screenOptions={{
+                headerBackButtonDisplayMode: 'minimal',
+                headerTitleAlign: 'center',
+                contentStyle: {
+                  backgroundColor: 'rgba(128, 128, 128, 0.25)',
+                },
+                headerStyle: {
+                  backgroundColor: defaultTheme.colors.brandSecondary,
+                },
+                headerTintColor: defaultTheme.colors.slate900,
+                headerTitleStyle: {
+                  color: defaultTheme.colors.slate900,
+                },
+                headerTitle: () => <BrandHeaderTitle />,
+                headerRight: () => <HeaderActions />,
+              }}
+            >
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)/profile/index" options={{ title: 'PROFILE' }} />
+              <Stack.Screen name="(tabs)/profile/passes" options={{ title: 'Passes' }} />
+              <Stack.Screen name="(tabs)/profile/memberships" options={{ title: 'Memberships' }} />
+              <Stack.Screen name="(tabs)/profile/orders" options={{ title: 'Orders' }} />
+              <Stack.Screen name="(tabs)/profile/notifications" options={{ title: 'Notifications' }} />
 
-            <Stack.Screen name="profile/settings/index" options={{ title: 'Settings' }} />
-            <Stack.Screen
-              name="profile/settings/favorite-teams"
-              options={{ title: 'Favorite Teams' }}
-            />
-            <Stack.Screen name="profile/settings/account-info" options={{ title: 'Account Info' }} />
-            <Stack.Screen
-              name="profile/settings/payment-methods"
-              options={{ title: 'Payment Methods' }}
-            />
-            <Stack.Screen
-              name="profile/settings/privacy-permissions"
-              options={{ title: 'Privacy & Permissions' }}
-            />
-            <Stack.Screen name="profile/settings/app-theme" options={{ title: 'App Theme' }} />
-            <Stack.Screen
-              name="profile/settings/help-support"
-              options={{ title: 'Help & Support' }}
-            />
-            <Stack.Screen
-              name="profile/settings/terms-policies"
-              options={{ title: 'Terms & Policies' }}
-            />
-          </Stack>
-        </AppBackground>
-      </ThemeProvider>
+              <Stack.Screen name="(tabs)/profile/settings/index" options={{ title: 'Settings' }} />
+              <Stack.Screen
+                name="(tabs)/profile/settings/favorite-teams"
+                options={{ title: 'Favorite Teams' }}
+              />
+              <Stack.Screen
+                name="(tabs)/profile/settings/account-info"
+                options={{ title: 'Account Info' }}
+              />
+              <Stack.Screen
+                name="(tabs)/profile/settings/payment-methods"
+                options={{ title: 'Payment Methods' }}
+              />
+              <Stack.Screen
+                name="(tabs)/profile/settings/privacy-permissions"
+                options={{ title: 'Privacy & Permissions' }}
+              />
+              <Stack.Screen
+                name="(tabs)/profile/settings/app-theme"
+                options={{ title: 'App Theme' }}
+              />
+              <Stack.Screen
+                name="(tabs)/profile/settings/help-support"
+                options={{ title: 'Help & Support' }}
+              />
+              <Stack.Screen
+                name="(tabs)/profile/settings/terms-policies"
+                options={{ title: 'Terms & Policies' }}
+              />
+            </Stack>
+          </AppBackground>
+        </ThemeProvider>
+      </CartProvider>
     </PersistQueryClientProvider>
   );
 }

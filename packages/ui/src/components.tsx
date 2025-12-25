@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
   type PressableProps,
   type TextProps,
@@ -31,10 +32,14 @@ export function Screen(props: { title?: string; children?: React.ReactNode }) {
 }
 
 export function Section(props: { title: string; right?: React.ReactNode; children?: React.ReactNode }) {
+  const colorScheme = useColorScheme();
+  const titleColor =
+    colorScheme === 'dark' ? defaultTheme.colors.brandSecondary : defaultTheme.colors.slate900;
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text accessibilityRole="header" style={styles.h2}>
+        <Text accessibilityRole="header" style={[styles.h2, { color: titleColor }]}>
           {props.title}
         </Text>
         {props.right ? <View>{props.right}</View> : null}

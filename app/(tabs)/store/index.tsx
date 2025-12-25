@@ -433,23 +433,6 @@ export default function StoreScreen() {
           )}
         />
 
-        <Card accessibilityLabel="Cart summary" style={{ gap: 10 }}>
-          <LabelText>
-            Cart: {cart.itemCount} item{cart.itemCount === 1 ? '' : 's'} • {formatMoney(cart.totalCents, cart.currency)}
-          </LabelText>
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <Link href="/(tabs)/store/cart" asChild>
-              <View style={{ flex: 1 }}>
-                <Button label="View Cart" hint="Open your cart" />
-              </View>
-            </Link>
-            <Link href="/(tabs)/store/orders" asChild>
-              <View style={{ flex: 1 }}>
-                <Button label="Orders" hint="View your orders" />
-              </View>
-            </Link>
-          </View>
-        </Card>
       </Section>
     </Screen>
   );
