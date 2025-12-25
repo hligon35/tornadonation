@@ -1,0 +1,5 @@
+# Files/directories excluded from upload to EAS Build
+node_modules/
+.expo/
+.expo-shared/
+.eas-inspect-*/
