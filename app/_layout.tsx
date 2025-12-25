@@ -58,7 +58,7 @@ export default function RootLayout() {
   // We hide the native splash on first layout so the video splash can render.
 
   useEffect(() => {
-    const MIN_SPLASH_MS = 4450;
+    const MIN_SPLASH_MS = 4425;
     const timer = setTimeout(() => {
       setMinSplashTimePassed(true);
     }, MIN_SPLASH_MS);
